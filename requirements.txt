@@ -1,0 +1,10 @@
+asyncio
+random
+string
+requests
+colorama
+faker
+datetime
+capmonster-python
+twocaptcha
+anticaptchaofficial
