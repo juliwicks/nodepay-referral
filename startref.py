@@ -59,8 +59,7 @@ def print_banner():
       | '_ \| | | |    \ \ | | | | \ \ /\ / / |/ __| |/ / __|
       | |_) | |_| | /\_/ / |_| | | |\ V  V /| | (__|   <\__ \
       |_.__/ \__, | \___/ \__,_|_|_| \_/\_/ |_|\___|_|\_\___/
-             |___/                                           
-             {Fore.RESET}
+             |___/                                           {Fore.RESET}
     """
     print(ascii_art)
     print(f"{Fore.CYAN}{'='*45}")
@@ -338,87 +337,81 @@ class ReferralClient:
             return None
 
 async def main():
-    try:
-        print_banner()
+    print_banner()
 
-        ref_code = input(f"{Fore.GREEN}Enter referral code: {Style.RESET_ALL}")
-        num_referrals = int(input(f"{Fore.GREEN}Enter number of referrals: {Style.RESET_ALL}"))
-        
-        print(f"\n{Fore.YELLOW}Available captcha services:{Style.RESET_ALL}")
-        print(f"1. Capmonster")
-        print(f"2. Anticaptcha")
-        print(f"3. 2Captcha{Style.RESET_ALL}")
-        service_choice = input(f"{Fore.GREEN}Choose captcha service (1-3): {Style.RESET_ALL}")
-        api_key = input(f"{Fore.GREEN}Enter API key for captcha service: {Style.RESET_ALL}")
-        check_files()
-        use_proxies = input(f"{Fore.GREEN}Use proxies? (yes/no): {Style.RESET_ALL}").lower() == 'yes'
-        proxy_manager = None
-        
-        if use_proxies:
-            try:
-                with open('proxies.txt', 'r') as f:
-                    proxy_list = [line.strip() for line in f if line.strip()]
-                proxy_manager = ProxyManager(proxy_list)
-                log_step(f"Loaded {len(proxy_list)} proxies", "success")
-            except FileNotFoundError:
-                log_step("proxies.txt not found. Running without proxies.", "warning")
-
-        service_map = {
-            "1": "capmonster",
-            "2": "anticaptcha",
-            "3": "2captcha"
-        }
-        
+    ref_code = input(f"{Fore.GREEN}Enter referral code: {Style.RESET_ALL}")
+    num_referrals = int(input(f"{Fore.GREEN}Enter number of referrals: {Style.RESET_ALL}"))
+    
+    print(f"\n{Fore.YELLOW}Available captcha services:{Style.RESET_ALL}")
+    print(f"1. Capmonster")
+    print(f"2. Anticaptcha")
+    print(f"3. 2Captcha{Style.RESET_ALL}")
+    service_choice = input(f"{Fore.GREEN}Choose captcha service (1-3): {Style.RESET_ALL}")
+    api_key = input(f"{Fore.GREEN}Enter API key for captcha service: {Style.RESET_ALL}")
+    check_files()
+    use_proxies = input(f"{Fore.GREEN}Use proxies? (yes/no): {Style.RESET_ALL}").lower() == 'yes'
+    proxy_manager = None
+    
+    if use_proxies:
         try:
-            captcha_service = CaptchaServiceFactory.create_service(service_map[service_choice], api_key)
-            log_step("Captcha service initialized", "success")
-        except Exception as e:
-            log_step(f"Failed to initialize captcha service: {str(e)}", "error")
-            return
+            with open('proxies.txt', 'r') as f:
+                proxy_list = [line.strip() for line in f if line.strip()]
+            proxy_manager = ProxyManager(proxy_list)
+            log_step(f"Loaded {len(proxy_list)} proxies", "success")
+        except FileNotFoundError:
+            log_step("proxies.txt not found. Running without proxies.", "warning")
 
-        client = ReferralClient(proxy_manager)
-        successful_referrals = []
-        
-        log_step("Starting referral process...", "info")
-        
-        for i in range(num_referrals):
-            print(f"\n{Fore.CYAN}{'='*45}")
-            log_step(f"Processing referral {i+1}/{num_referrals}", "info")
-            
-            result = await client.process_referral(ref_code, captcha_service)
-            if result:
-                log_step("Account details:", "success")
-                print(f"{Fore.CYAN}Username: {Fore.WHITE}{result['username']}")
-                print(f"{Fore.CYAN}Email: {Fore.WHITE}{result['email']}")
-                print(f"{Fore.CYAN}Password: {Fore.WHITE}{result['password']}")
-                print(f"{Fore.CYAN}Referred to: {Fore.WHITE}{result['referral_code']}")
-                print(f"{Fore.CYAN}Token: {Fore.WHITE}{result['token']}")
-                successful_referrals.append(result)
-                
-                with open('accounts.txt', 'a') as f:
-                    f.write(f"Email: {result['email']}\n")
-                    f.write(f"Password: {result['password']}\n")
-                    f.write(f"Username: {result['username']}\n")
-                    f.write(f"Referred to: {result['referral_code']}\n")
-                    f.write(f"Token: {result['token']}\n")
-                    f.write(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-                    f.write("-" * 50 + "\n")
-            
-            if i < num_referrals - 1:
-                delay = random.uniform(2, 300)
-                log_step(f"Waiting {delay:.2f} seconds...", "info")
-                time.sleep(delay)
+    service_map = {
+        "1": "capmonster",
+        "2": "anticaptcha",
+        "3": "2captcha"
+    }
+    
+    try:
+        captcha_service = CaptchaServiceFactory.create_service(service_map[service_choice], api_key)
+        log_step("Captcha service initialized", "success")
+    except Exception as e:
+        log_step(f"Failed to initialize captcha service: {str(e)}", "error")
+        return
 
+    client = ReferralClient(proxy_manager)
+    successful_referrals = []
+    
+    log_step("Starting referral process...", "info")
+    
+    for i in range(num_referrals):
         print(f"\n{Fore.CYAN}{'='*45}")
-        log_step("Summary:", "info")
-        log_step(f"Total attempted: {num_referrals}", "info")
-        log_step(f"Successful: {len(successful_referrals)}", "success")
-        print(f"{Fore.CYAN}{'='*45}\n")
+        log_step(f"Processing referral {i+1}/{num_referrals}", "info")
+        
+        result = await client.process_referral(ref_code, captcha_service)
+        if result:
+            log_step("Account details:", "success")
+            print(f"{Fore.CYAN}Username: {Fore.WHITE}{result['username']}")
+            print(f"{Fore.CYAN}Email: {Fore.WHITE}{result['email']}")
+            print(f"{Fore.CYAN}Password: {Fore.WHITE}{result['password']}")
+            print(f"{Fore.CYAN}Referred to: {Fore.WHITE}{result['referral_code']}")
+            print(f"{Fore.CYAN}Token: {Fore.WHITE}{result['token']}")
+            successful_referrals.append(result)
+            
+            with open('accounts.txt', 'a') as f:
+                f.write(f"Email: {result['email']}\n")
+                f.write(f"Password: {result['password']}\n")
+                f.write(f"Username: {result['username']}\n")
+                f.write(f"Referred to: {result['referral_code']}\n")
+                f.write(f"Token: {result['token']}\n")
+                f.write(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+                f.write("-" * 50 + "\n")
+        
+        if i < num_referrals - 1:
+            delay = random.uniform(2, 300)
+            log_step(f"Waiting {delay:.2f} seconds...", "info")
+            time.sleep(delay)
 
-    except KeyboardInterrupt:
-        log_step("Process interrupted. Continuing to run...", "warning")
-        while True:
-            time.sleep(1)  # Keep the program running until it's manually stopped
+    print(f"\n{Fore.CYAN}{'='*45}")
+    log_step("Summary:", "info")
+    log_step(f"Total attempted: {num_referrals}", "info")
+    log_step(f"Successful: {len(successful_referrals)}", "success")
+    print(f"{Fore.CYAN}{'='*45}\n")
 
 if __name__ == "__main__":
     asyncio.run(main())
