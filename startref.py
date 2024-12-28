@@ -405,7 +405,7 @@ async def main():
         if i < num_referrals - 1:
             delay = random.uniform(2, 300)
             log_step(f"Waiting {delay:.2f} seconds...", "info")
-            time.sleep(delay)
+            await asyncio.sleep(delay)
 
     print(f"\n{Fore.CYAN}{'='*45}")
     log_step("Summary:", "info")
